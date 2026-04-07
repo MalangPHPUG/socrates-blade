@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Socrates Blade v3.2 - Advanced Security Testing Tool
-Blogware/Scriptlog CMS Security Auditor
+Socrates Blade - Advanced Security Testing Tool
+Scriptlog Security Auditor
 
 Version: 3.2.0
 Author: Security Assessment Team

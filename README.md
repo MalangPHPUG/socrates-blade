@@ -1,4 +1,4 @@
-# Socrates Blade v3.2
+# Socrates Blade
 
 **Advanced Security Testing Framework for Scriptlog PHP Blogware**
 
@@ -366,4 +366,3 @@ MIT License - See LICENSE file for details.
 **Version**: 3.2.0  
 **Last Updated**: March 27, 2026  
 **Author**: Security Assessment Team
-# socrates-blade
