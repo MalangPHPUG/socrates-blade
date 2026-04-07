@@ -1,6 +1,6 @@
 # Socrates Blade v3.2
 
-**Advanced Security Testing Framework for Blogware/Scriptlog CMS**
+**Advanced Security Testing Framework for Scriptlog PHP Blogware**
 
 ![Version](https://img.shields.io/badge/version-3.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -10,7 +10,7 @@
 
 ## Overview
 
-Socrates Blade is a comprehensive security testing framework designed specifically for Blogware/Scriptlog CMS. It provides automated vulnerability scanning with support for OWASP Top 10 2021 categories, brute-force testing, and detailed reporting in multiple formats.
+Socrates Blade is a comprehensive security testing framework designed specifically for Scriptlog PHP Blogware. It provides automated vulnerability scanning with support for OWASP Top 10 2021 categories, brute-force testing, and detailed reporting in multiple formats.
 
 ### Features
 
