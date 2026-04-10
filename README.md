@@ -2,6 +2,7 @@
 
 **Security Testing Framework for PHP Blogware Applications**
 
+![Socrates Blade Mascot](assets/socrates-blade-min.png)
 ![Version](https://img.shields.io/badge/version-3.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
