@@ -1,285 +1,260 @@
 # Socrates Blade
 
-**Advanced Security Testing Framework for Scriptlog PHP Blogware**
+**Security Testing Framework for PHP Blogware Applications**
 
-![Socrates Blade Mascot](assets/socrates-blade-min.png)
 ![Version](https://img.shields.io/badge/version-3.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![OWASP Top 10](https://img.shields.io/badge/OWASP-Top%2010%202021-red)
 
 ---
 
-## Overview
+## What is Socrates Blade?
 
-Socrates Blade is a comprehensive security testing framework designed specifically for Scriptlog PHP Blogware. It provides automated vulnerability scanning with support for OWASP Top 10 2021 categories, brute-force testing, and detailed reporting in multiple formats.
+Socrates Blade is a security testing tool that helps you find vulnerabilities in PHP Blogware applications. It scans your web application for common security issues and provides detailed reports about what it finds.
 
-### Features
+Think of it like a health check for your website's security - it looks for weaknesses that hackers might exploit.
 
-- **OWASP Top 10 2021 Coverage** - Tests for all major vulnerability categories
-- **Route-Aware Scanning** - Understands application structure for targeted testing
-- **Aggressive Mode** - Extended testing with configurable delays (up to 30s)
-- **Credential Brute-Forcing** - Built-in brute force with custom wordlists
-- **Multi-Format Reports** - JSON and HTML output formats
-- **CI/CD Integration** - Exit codes, logging, and automation support
-- **Local & Remote Testing** - Works with localhost and remote instances
+### What Can It Find?
+
+- **SQL Injection** - Dangerous SQL commands that could steal your database
+- **Cross-Site Scripting (XSS)** - Malicious scripts that could attack your users
+- **Path Traversal** - Files that shouldn't be accessible
+- **Server-Side Request Forgery (SSRF)** - Attacks that trick your server into visiting malicious URLs
+- **And many more...**
 
 ---
 
-## Quick Start
+## System Requirements
 
-### Prerequisites
+Before you begin, make sure your computer has:
 
-- Python 3.8+
-- PHP 7.4+ (for route synchronization)
-- Blogware/Scriptlog installation (for dynamic routes)
+| Requirement | Minimum Version | Why You Need It |
+|-------------|-----------------|------------------|
+| **Python** | 3.8 or higher | Runs the security scanner |
+| **PHP** | 7.4 or higher | Extracts routes from your application |
+| **curl** | Any recent version | Makes HTTP requests to test your site |
+| **Operating System** | Linux, macOS, or Windows (with WSL) | The tool works best on Unix-like systems |
 
-### Installation
+### Checking Your Python Version
+
+```bash
+python3 --version
+```
+
+### Checking Your PHP Version
+
+```bash
+php --version
+```
+
+---
+
+## Installation
+
+### Step 1: Download from GitHub
+
+Open your terminal and run:
 
 ```bash
 # Clone the repository
-cd socrates-blade
+git clone https://github.com/MalangPHPUG/socrates-blade.git
 
-# Setup virtual environment
+# Enter the directory
+cd socrates-blade
+```
+
+### Step 2: Set Up Python Virtual Environment
+
+```bash
+# Create a virtual environment (keeps your Python packages organized)
 python3 -m venv venv
+
+# Activate the virtual environment
+# On Linux/macOS:
 source venv/bin/activate
 
-# Install dependencies
+# On Windows (Command Prompt):
+venv\Scripts\activate.bat
+
+# On Windows (PowerShell):
+venv\Scripts\Activate.ps1
+```
+
+### Step 3: Install Dependencies
+
+```bash
+# Install required Python packages
 pip install -r scanrequirements.txt
 ```
 
-### Basic Usage
+### Step 4: Verify Installation
 
 ```bash
-# Using the automation wrapper (recommended)
-./run-scan.sh http://localhost
-
-# Using Python directly
-python3 socrates-blade.py http://localhost
-
-# With authentication (replace <username> and <password> with valid credentials)
-./run-scan.sh http://localhost \
-    -u <username> \
-    -p <password> \
-    -o findings.json
+# Check that everything is working
+python3 socrates-blade.py --help
 ```
+
+You should see a help message with all available options.
 
 ---
 
-## Usage
+## Quick Start Guide
 
-### Automation Wrapper (`run-scan.sh`)
+### Your First Security Scan
 
-The recommended way to run security scans:
+Let's run a simple scan on your local development server:
 
 ```bash
-./run-scan.sh <target_url> [options]
+# Make sure your local server is running first!
+# Then run the scan:
+
+./run-scan.sh http://localhost
 ```
 
-#### Options
+The tool will:
+1. Validate that your URL is reachable
+2. Check system requirements
+3. Set up Python environment
+4. Scan for vulnerabilities
+5. Generate a report
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-u, --username` | Username for authentication | - |
-| `-p, --password` | Password for authentication | - |
-| `--aggressive` | Enable aggressive testing | false |
-| `--brute-force` | Enable brute force attack | false |
-| `--threads <n>` | Number of concurrent threads | 5 |
-| `--timeout <sec>` | Request timeout in seconds | 5 |
-| `--proxy <url>` | HTTP/HTTPS proxy | - |
-| `-o, --output <file>` | JSON report file | - |
-| `--html-report <file>` | HTML report file | - |
-| `--wordlist <file>` | Custom password wordlist | - |
-| `--no-sync` | Skip route synchronization | false |
-| `--dry-run` | Show commands without executing | false |
-| `-h, --help` | Show help message | - |
+### Running a Dry Run (Preview Mode)
 
-#### Examples
+If you want to see what the scan will do without actually running it:
 
 ```bash
-# Basic scan (unauthenticated)
-./run-scan.sh http://localhost
-
-# Authenticated scan with reports (replace with valid credentials)
-./run-scan.sh http://localhost \
-    -u <username> \
-    -p <password> \
-    -o report.json \
-    --html-report report.html
-
-# Aggressive scan with brute force
-./run-scan.sh https://blog.example.com \
-    --aggressive \
-    --brute-force \
-    --threads 10
-
-# Scan via Burp Suite proxy
-./run-scan.sh http://blog.example.com \
-    --proxy http://127.0.0.1:8080
-
-# Dry run to see what would execute
 ./run-scan.sh http://localhost --dry-run
 ```
 
-### Python Script (`socrates-blade.py`)
+This shows you all the commands that would be executed - great for learning what happens behind the scenes!
 
-Direct Python execution with full control:
+---
+
+## Common Usage Examples
+
+### Basic Scan (No Authentication)
 
 ```bash
-python3 socrates-blade.py <target_url> [options]
+./run-scan.sh http://localhost
 ```
 
-#### Options
-
-| Option | Description |
-|--------|-------------|
-| `-u <user>` | Username |
-| `-p <pass>` | Password |
-| `--aggressive` | Aggressive mode |
-| `--brute-force` | Brute force attack |
-| `--threads <n>` | Thread count |
-| `--timeout <sec>` | Request timeout |
-| `--proxy <url>` | Proxy URL |
-| `-o <file>` | JSON output |
-| `--html-report <file>` | HTML output |
-| `--routes-file <file>` | Routes JSON file |
-
----
-
-## Testing Capabilities
-
-### OWASP Top 10 2021 Coverage
-
-| Category | Vulnerabilities Tested |
-|----------|----------------------|
-| **A01** - Broken Access Control | IDOR, privilege escalation, auth bypass |
-| **A02** - Cryptographic Failures | Session tokens, cookie security, password storage |
-| **A03** - Injection | SQLi, XSS, XXE, Path Traversal |
-| **A04** - Insecure Design | CSRF, rate limiting |
-| **A05** - Security Misconfiguration | Missing headers, debug exposure |
-| **A06** - Vulnerable Components | Outdated dependencies |
-| **A07** - Auth Failures | Brute force, session hijacking |
-| **A08** - Data Integrity Failures | Cookie tampering, token reuse |
-| **A09** - Logging Failures | Insufficient audit trail |
-| **A10** - SSRF | Server-side request forgery |
-
-### Vulnerability Types
-
-- **SQL Injection** - Error-based, time-based, union-based, boolean blind
-- **Cross-Site Scripting (XSS)** - Reflected, stored, DOM-based
-- **Path Traversal** - Unix/Windows, encoding bypass
-- **SSRF** - Cloud metadata, localhost, protocol smuggling
-- **XXE** - XML External Entity injection
-- **CSRF** - Missing token protection
-- **IDOR** - Insecure direct object references
-
----
-
-## Project Structure
-
-```
-socrates-blade/
-├── socrates-blade.py       # Main Python security tester
-├── config.py               # Configuration and payloads
-├── routes.json             # Blogware route definitions
-├── run-scan.sh            # Bash automation wrapper
-├── export_routes.php      # PHP route exporter
-├── scanrequirements.txt   # Python dependencies
-├── payloads/               # Attack payloads
-│   ├── xss.txt            # XSS payloads (100+)
-│   ├── sqli.txt           # SQL injection payloads
-│   ├── traversal.txt      # Path traversal payloads
-│   └── ssrf.txt           # SSRF payloads
-└── README.md              # This file
-```
-
----
-
-## Configuration
-
-### Python Dependencies
-
-The following packages are required:
-
-```
-requests>=2.31.0
-beautifulsoup4>=4.12.0
-colorama>=0.4.6
-```
-
-Install with: `pip install -r scanrequirements.txt`
-
-### Route Synchronization
-
-Routes are automatically synchronized from the Blogware application using `export_routes.php`. This requires:
-
-1. PHP 7.4+ installed
-2. Blogware installation accessible
-3. Valid `config.php` in Blogware root
-
-To manually sync routes:
+### Scan with Authentication
 
 ```bash
-php export_routes.php > routes.json
+./run-scan.sh http://localhost \
+    -u admin \
+    -p your_password \
+    -o findings.json
 ```
 
-### Custom Payloads
+### Generate HTML Report
 
-Add custom payloads to the `payloads/` directory:
+```bash
+./run-scan.sh http://localhost \
+    -u admin \
+    -p your_password \
+    --html-report report.html
+```
 
-- `xss.txt` - XSS attack vectors
-- `sqli.txt` - SQL injection payloads
-- `traversal.txt` - Path traversal strings
-- `ssrf.txt` - SSRF targets (format: `URL|Marker`)
+### Aggressive Mode (Thorough Testing)
+
+```bash
+./run-scan.sh http://localhost \
+    --aggressive \
+    --timeout 30
+```
+
+Aggressive mode takes longer but tests more thoroughly.
+
+### Scan Through a Proxy (e.g., Burp Suite)
+
+```bash
+./run-scan.sh http://localhost \
+    --proxy http://127.0.0.1:8080
+```
+
+### Skip URL Validation
+
+If your target isn't accessible but you still want to run the scan:
+
+```bash
+./run-scan.sh http://localhost --no-validate
+```
 
 ---
 
-## Report Formats
+## Understanding the Output
 
-### JSON Report
+### Severity Levels
 
-```json
-{
-  "report_metadata": {
-    "tool": "Socrates Blade",
-    "version": "3.2.0",
-    "target": "http://localhost",
-    "scan_duration": 120.5
-  },
-  "summary": {
-    "total_findings": 15,
-    "critical": 2,
-    "high": 5,
-    "medium": 4,
-    "low": 4
-  },
-  "findings": [...]
-}
-```
+| Level | Meaning | Action Required |
+|-------|---------|-----------------|
+| **CRITICAL** | Immediate threat - could lead to data breach or complete system compromise | Fix within 24 hours |
+| **HIGH** | Serious vulnerability that could be exploited | Fix within 7 days |
+| **MEDIUM** | Moderate risk - should be addressed | Fix within 30 days |
+| **LOW** | Minor issue - improve when possible | Fix within 90 days |
 
-### HTML Report
+### Report Files
 
-The HTML report includes:
-- Executive summary with severity breakdown
-- Visual finding cards with severity badges
-- Detailed evidence and remediation guidance
-- CWE and OWASP mappings
+After a scan, you'll have:
+
+- **JSON Report** (`-o report.json`) - Machine-readable format for automation
+- **HTML Report** (`--html-report report.html`) - Easy to read in your browser
 
 ---
 
-## Severity Ratings
+## Command-Line Options Reference
 
-| Rating | Description | SLA |
-|--------|-------------|-----|
-| **CRITICAL** | RCE, full data breach, XXE | Immediate (<24h) |
-| **HIGH** | Stored XSS, IDOR, auth bypass | Urgent (<7d) |
-| **MEDIUM** | Reflected XSS, CSRF, missing headers | High (<30d) |
-| **LOW** | Info disclosure, weak policies | Medium (<90d) |
+### Authentication
+```
+-u, --username <name>    Your username
+-p, --password <pass>   Your password
+```
+
+### Scanning Options
+```
+--aggressive            Run more thorough tests (slower)
+--brute-force           Test password guessing
+--threads <n>           Number of parallel tests (default: 5)
+--timeout <seconds>    How long to wait for responses (default: 5)
+--proxy <url>           Use a proxy server
+--wordlist <file>       Custom password list for brute force
+```
+
+### Reporting
+```
+-o, --output <file>      Save JSON report
+--html-report <file>    Save HTML report
+--report-dir <dir>      Where to save reports
+```
+
+### Other Options
+```
+--no-sync               Skip route synchronization
+--no-validate          Skip URL validation
+--dry-run              Show what would run without executing
+-v, --verbose           Show detailed progress
+-h, --help              Show this help message
+```
+
+---
+
+## Testing the Scanner
+
+### Run Unit Tests
+
+```bash
+# Run URL validator tests
+./tests/bash/test_url_validator.sh
+
+# Run BATS test suite
+bats tests/bash/run-scan.sh.test.bats
+```
 
 ---
 
 ## CI/CD Integration
 
-### GitHub Actions Example
+### GitHub Actions
 
 ```yaml
 name: Security Scan
@@ -289,81 +264,106 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Run Security Scan
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r scanrequirements.txt
+      - name: Run security scan
         run: |
-          cd docs/security-testing/socrates-blade
           ./run-scan.sh ${{ secrets.TARGET_URL }} \
             -u ${{ secrets.TARGET_USER }} \
             -p ${{ secrets.TARGET_PASS }} \
             -o scan-results.json \
             --html-report scan-report.html
-      - name: Upload Reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: security-reports
-          path: |
-            docs/security-testing/socrates-blade/scan-results.json
-            docs/security-testing/socrates-blade/scan-report.html
-```
-
-### GitLab CI Example
-
-```yaml
-security_scan:
-  stage: test
-  script:
-    - cd docs/security-testing/socrates-blade
-    - pip install -r scanrequirements.txt
-    - ./run-scan.sh $TARGET_URL \
-        -u $TARGET_USER \
-        -p $TARGET_PASS \
-        -o security-report.json
-  artifacts:
-    reports:
-      junit: security-report.json
 ```
 
 ---
 
-## Ethical Usage
+## Troubleshooting
 
-**IMPORTANT**: This tool is designed for authorized security testing only.
+### "Python not found" Error
 
-- Only test systems you have permission to test
-- Review local laws and regulations before use
-- Do not use for unauthorized access
-- Respect rate limits and system resources
-- Follow responsible disclosure practices
+Make sure Python 3 is installed:
+```bash
+python3 --version
+```
+
+### "curl not found" Error
+
+Install curl or use an alternative method.
+
+### "Permission denied" Error
+
+Make the script executable:
+```bash
+chmod +x run-scan.sh
+```
+
+### Scan Fails to Connect
+
+- Make sure your web server is running
+- Try using `--no-validate` if the URL isn't reachable
+- Check firewall settings
 
 ---
 
-## Contributing
+## Important Notes
 
-Contributions are welcome! Please:
+### Only Test Systems You Own or Have Permission To Test
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+Using security tools on websites without permission is illegal. Make sure you:
+
+- Have written permission from the system owner
+- Are testing your own development environment
+- Are following responsible disclosure practices
+
+### Respect Rate Limits
+
+Don't overwhelm target servers with too many requests. Use `--timeout` and `--threads` options responsibly.
+
+---
+
+## Getting Help
+
+- Check the [Issues](https://github.com/MalangPHPUG/socrates-blade/issues) page
+- Review the code in `socrates-blade.py` and `config.py`
+- Examine the payloads in the `payloads/` directory
+
+---
+
+## Project Structure
+
+```
+socrates-blade/
+├── socrates-blade.py       # Main security scanner
+├── run-scan.sh            # Automation wrapper (start here!)
+├── config.py              # Configuration and settings
+├── routes.json            # Application routes
+├── export_routes.php      # PHP route extractor
+├── scanrequirements.txt   # Python dependencies
+├── payloads/              # Attack test payloads
+│   ├── xss.txt           # XSS attack strings
+│   ├── sqli.txt          # SQL injection strings
+│   ├── traversal.txt     # Path traversal strings
+│   └── ssrf.txt          # SSRF test strings
+├── tests/                 # Test suite
+│   ├── bash/             # Shell script tests
+│   └── python/           # Python tests
+├── LICENSE.md            # MIT License
+└── README.md             # This file
+```
 
 ---
 
 ## License
 
-MIT License - See LICENSE file for details.
-
----
-
-## References
-
-- [OWASP Top 10 2021](https://owasp.org/Top10/)
-- [OWASP Testing Guide v4.2](https://owasp.org/www-project-web-security-testing-guide/)
-- [CWE Database](https://cwe.mitre.org/)
-- [Blogware/Scriptlog Documentation](https://github.com/anomalyco/blogware)
+MIT License - See LICENSE.md file for details.
 
 ---
 
 **Version**: 3.2.0  
-**Last Updated**: March 27, 2026  
-**Author**: Security Assessment Team
+**Last Updated**: April 2026  
+**Maintained by**: Malang PHP User Group
