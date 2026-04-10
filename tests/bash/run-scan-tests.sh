@@ -6,7 +6,8 @@
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_FILE="$SCRIPT_DIR/url-validator-lib.sh"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+LIB_FILE="$PROJECT_ROOT/url-validator-lib.sh"
 
 # Colors for test output
 RED='\033[0;31m'
