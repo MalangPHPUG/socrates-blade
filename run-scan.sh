@@ -464,9 +464,10 @@ main() {
         echo ""
     fi
 
-    check_requirements
-    setup_virtualenv
-    setup_reporting
+    SYNC_ENABLED=true
+    if ! command -v php &> /dev/null; then
+        SYNC_ENABLED=false
+    fi
 
     sync_routes
 
