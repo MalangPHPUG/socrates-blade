@@ -11,14 +11,38 @@
  * @requires Blogware/Scriptlog installation with valid config.php
  */
 
-// Allow CLI execution without SCRIPTLOG constant
 if (php_sapi_name() !== 'cli' && !defined('SCRIPTLOG')) {
     defined('SCRIPTLOG') || die('Direct access not permitted');
 }
 
-// Ensure we have proper error handling
 error_reporting(E_ERROR | E_PARSE);
 ini_set('display_errors', '0');
+
+define('SCRIPTLOG', true);
+
+$scriptlogPath = __DIR__ . '/lib/';
+
+if (!function_exists('app_url')) {
+    function app_url() {
+        static $appUrl = null;
+        
+        if ($appUrl !== null) {
+            return $appUrl;
+        }
+        
+        $appUrl = '';
+        
+        $configPath = dirname($scriptlogPath) . '/config.php';
+        if (file_exists($configPath)) {
+            $config = @include $configPath;
+            if (isset($config['app']['url'])) {
+                $appUrl = $config['app']['url'];
+            }
+        }
+        
+        return $appUrl;
+    }
+}
 
 /**
  * Route definitions for Blogware/Scriptlog CMS
@@ -551,7 +575,7 @@ function getExportMetadata() {
             'generated' => date('Y-m-d H:i:s'),
             'generator' => 'Socrates Blade Route Exporter v1.0',
             'php_version' => PHP_VERSION,
-            'url' => defined('app_url') ? app_url() : 'unknown'
+            'url' => function_exists('app_url') ? app_url() : 'unknown'
         ]
     ];
 }

@@ -100,6 +100,56 @@ You should see a help message with all available options.
 
 ## Quick Start Guide
 
+### Route Synchronization
+
+Socrates Blade uses `export_routes.php` to dynamically extract route definitions from your Scriptlog/Blogware installation. This ensures the security scanner has up-to-date information about all available endpoints.
+
+**Option 1: Place Socrates Blade Inside Scriptlog Installation**
+
+For the best experience, place Socrates Blade inside your Scriptlog installation:
+
+```bash
+# Copy socrates-blade to your Scriptlog installation
+cp -r socrates-blade /var/www/phpsite/public_html/
+
+# Navigate to the tool directory
+cd /var/www/phpsite/public_html/socrates-blade
+```
+
+When placed inside Scriptlog, `export_routes.php` will automatically detect the `config.php` in the parent directory and extract the correct application URL.
+
+**Option 2: Standalone Installation**
+
+Place Socrates Blade anywhere on your system:
+
+```bash
+# Copy lib folder from Scriptlog to socrates-blade directory
+# (lib folder should be at the same level as export_routes.php)
+cp -r /var/www/phpsite/public_html/lib /var/www/html/socrates-blade/
+
+# Copy config.php to socrates-blade directory
+cp /var/www/phpsite/public_html/config.php /var/www/html/socrates-blade/
+```
+
+### Generate Routes
+
+After placing the tool, generate the routes.json file:
+
+```bash
+# Navigate to socrates-blade directory
+cd /var/www/phpsite/public_html/socrates-blade  # if inside Scriptlog
+# OR
+cd /var/www/html/socrates-blade  # if standalone
+
+# Export routes to JSON
+php export_routes.php > routes.json
+```
+
+This will create an updated `routes.json` file with:
+- Current timestamp
+- Application URL from config.php
+- All available routes from your Scriptlog installation
+
 ### Your First Security Scan
 
 Let's run a simple scan on your local development server:
