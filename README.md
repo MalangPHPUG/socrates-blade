@@ -5,6 +5,9 @@
 ![Socrates Blade Mascot](assets/socrates-blade-min.png)
 ![Version](https://img.shields.io/badge/version-3.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+[![CI](https://github.com/MalangPHPUG/socrates-blade/actions/workflows/python-app.yml/badge.svg)](https://github.com/MalangPHPUG/socrates-blade/actions/workflows/python-app.yml)
+[![Lint](https://github.com/MalangPHPUG/socrates-blade/actions/workflows/pylint.yml/badge.svg)](https://github.com/MalangPHPUG/socrates-blade/actions/workflows/pylint.yml)
+[![Tests](https://github.com/MalangPHPUG/socrates-blade/actions/workflows/python-app.yml/badge.svg?label=tests)](https://github.com/MalangPHPUG/socrates-blade/actions/workflows/python-app.yml)
 
 ---
 
