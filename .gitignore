@@ -50,8 +50,5 @@ Thumbs.db
 # Wordlists (optional - uncomment if you want to ignore)
 # wordlists/
 
-# AI Assistant instructions (personal)
-AGENTS.md
-
 # lib -- from scriptlog
 lib/
