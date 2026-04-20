@@ -418,4 +418,4 @@ MIT License - See LICENSE.md file for details.
 
 **Version**: 3.2.0  
 **Last Updated**: April 2026  
-**Maintained by**: Malang PHP User Group
+**Maintained by**: Volunteer
