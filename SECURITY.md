@@ -102,4 +102,4 @@ For security-related matters, please contact the maintainers through GitHub's pr
 ---
 
 **Last Updated**: April 2026
-**Maintained by**: Malang PHP User Group
+**Maintained by**: Volunteers

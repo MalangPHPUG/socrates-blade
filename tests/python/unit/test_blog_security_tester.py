@@ -501,5 +501,58 @@ class TestSeverityAndOWASP(unittest.TestCase):
         self.assertEqual(CWE_MAPPINGS["sqli"][0], "CWE-89")
 
 
+class TestFalsePositiveFiltering(unittest.TestCase):
+    """Test false positive filtering for security findings"""
+
+    @patch('socrates_blade.requests.Session')
+    def setUp(self, mock_session):
+        args = MockArgs(target='http://localhost')
+        self.tester = BlogSecurityTester(args)
+        self.mock_resp = Mock()
+        self.mock_resp.text = '<html><body>Test page</body></html>'
+
+    def test_password_reset_token_in_reset_url(self):
+        """Test filtering password reset tokens in reset URLs"""
+        url = 'http://localhost/admin/forgot-password.php?load=reset&uniqueKey=f4268cc5063a151ca847865dbaf0dde9'
+        payload = 'f4268cc5063a151ca847865dbaf0dde9'
+        result = self.tester.is_false_positive(url, 'uniqueKey', payload)
+        self.assertTrue(result)
+
+    def test_password_reset_token_in_recover_url(self):
+        """Test filtering password reset tokens in recover URLs"""
+        url = 'http://localhost/admin/recover-password.php?key=f4268cc5063a151ca847865dbaf0dde9'
+        payload = 'f4268cc5063a151ca847865dbaf0dde9'
+        result = self.tester.is_false_positive(url, 'key', payload)
+        self.assertTrue(result)
+
+    def test_normal_xss_payload_not_filtered(self):
+        """Test that normal XSS payloads are NOT filtered"""
+        url = 'http://localhost/search?q=test'
+        payload = "<script>alert('XSS')</script>"
+        result = self.tester.is_false_positive(url, 'q', payload)
+        self.assertFalse(result)
+
+    def test_short_hex_not_filtered(self):
+        """Test that short hex strings are NOT filtered"""
+        url = 'http://localhost/search?q=abc'
+        payload = 'abc123'
+        result = self.tester.is_false_positive(url, 'q', payload)
+        self.assertFalse(result)
+
+    def test_non_hex_string_not_filtered(self):
+        """Test that non-hex strings are NOT filtered"""
+        url = 'http://localhost/search?q=test'
+        payload = 'test123'
+        result = self.tester.is_false_positive(url, 'q', payload)
+        self.assertFalse(result)
+
+    def test_hex_in_normal_url_not_filtered(self):
+        """Test that hex strings in normal URLs are NOT filtered"""
+        url = 'http://localhost/post?id=123'
+        payload = 'abc123def456'
+        result = self.tester.is_false_positive(url, 'id', payload)
+        self.assertFalse(result)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

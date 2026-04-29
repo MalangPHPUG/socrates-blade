@@ -362,18 +362,46 @@ class BlogSecurityTester:
                 cwe='CWE-16'
             )
     
+    def is_false_positive(self, url, param, payload):
+        """
+        Filter out false positives that look like XSS but are actually legitimate content.
+        
+        Common false positives:
+        - Password reset tokens (32+ char hex strings)
+        - Session IDs
+        - UUIDs
+        - Already-sanitized content
+        """
+        # Password reset token pattern: 32+ char hex string
+        # These appear in URLs like: ?Id=292&uniqueKey=f4268cc5063a151ca847865dbaf0dde9
+        if len(payload) >= 32 and re.match(r'^[a-f0-9]+$', payload.lower()):
+            # Check if this is in a password reset context
+            if 'uniqueKey' in url or 'reset' in url or 'recover' in url:
+                return True
+        
+        # Already-encoded payloads that are safely escaped
+        # If payload appears URL-encoded, it might be safely escaped
+        if '%3C' in payload or '%3E' in payload or '%22' in payload:
+            # Check if raw form is NOT in response (meaning it's escaped)
+            decoded = unquote(payload)
+            if decoded not in resp.text:
+                return True
+        
+        return False
+    
     def test_xss(self, url, params, method='GET'):
         """Test for reflected XSS vulnerabilities"""
         payloads = Config.get_all_xss_payloads()
         
-        for payload in payloads[:20]:  # Limit in non-aggressive mode
-            if self.args.aggressive:
-                payloads_to_test = payloads
-            else:
-                payloads_to_test = payloads[:10]
+        if self.args.aggressive:
+            payloads_to_test = payloads
+        else:
+            payloads_to_test = payloads[:10]
+        
+        for param in params:
+            test_params = params.copy()
             
-            for param in params:
-                test_params = params.copy()
+            for payload in payloads_to_test:
                 test_params[param] = payload
                 
                 try:
@@ -384,7 +412,16 @@ class BlogSecurityTester:
                     
                     # Check for payload reflection
                     if payload in resp.text:
-                        # Double-check it's not in a comment or script context
+                        # Filter out false positives
+                        if self.is_false_positive(url, param, payload):
+                            continue
+                        
+                        # Check if it's in a dangerous context (not escaped)
+                        # Look for unescaped < and > characters
+                        if '<' in payload and f'&lt;{payload.replace("<", "")}' in resp.text:
+                            # Safe - was HTML-escaped
+                            continue
+                        
                         self.add_finding(
                             'Reflected XSS',
                             url,

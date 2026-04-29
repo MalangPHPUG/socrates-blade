@@ -7,7 +7,7 @@
  * 
  * Usage: php export_routes.php > routes.json
  * 
- * @version 1.0
+ * @version 2.0
  * @requires Blogware/Scriptlog installation with valid config.php
  */
 
@@ -44,12 +44,13 @@ if (!function_exists('app_url')) {
 
 /**
  * Route definitions for Blogware/Scriptlog CMS
- * These are extracted from lib/core/Bootstrap.php
+ * Extracted from lib/core/Bootstrap.php, api/index.php, and admin/*.php files
+ * Last Updated: April 28, 2026
  */
 function getBlogwareRoutes() {
     $routes = [];
     
-    // Frontend routes (from Bootstrap.php)
+    // Frontend routes (from lib/core/Bootstrap.php)
     $frontendRoutes = [
         'home' => [
             'path' => '/',
@@ -93,6 +94,13 @@ function getBlogwareRoutes() {
             'parameters' => [],
             'attack_vectors' => []
         ],
+        'blog' => [
+            'path' => '/blog([^/]*)',
+            'method' => 'GET',
+            'description' => 'Blog listing page',
+            'parameters' => [],
+            'attack_vectors' => ['reflected_xss']
+        ],
         'search' => [
             'path' => '/',
             'method' => 'GET',
@@ -107,10 +115,31 @@ function getBlogwareRoutes() {
             'description' => 'Static page view',
             'parameters' => ['page'],
             'attack_vectors' => ['idor', 'reflected_xss']
+        ],
+        'privacy' => [
+            'path' => '/privacy',
+            'method' => 'GET',
+            'description' => 'Privacy policy page',
+            'parameters' => [],
+            'attack_vectors' => []
+        ],
+        'download' => [
+            'path' => '/download/(?<identifier>[a-f0-9\-]+)',
+            'method' => 'GET',
+            'description' => 'Secure download page',
+            'parameters' => ['identifier'],
+            'attack_vectors' => ['idor']
+        ],
+        'download_file' => [
+            'path' => '/download/(?<identifier>[a-f0-9\-]+)/file',
+            'method' => 'GET',
+            'description' => 'Secure file download',
+            'parameters' => ['identifier'],
+            'attack_vectors' => ['idor', 'path_traversal']
         ]
     ];
     
-    // Admin routes
+    // Admin routes (from admin/*.php files)
     $adminRoutes = [
         // Authentication
         'auth.login' => [
@@ -128,20 +157,55 @@ function getBlogwareRoutes() {
             'csrf_protected' => true
         ],
         'auth.logout' => [
-            'path' => '/admin/login.php?load=logout',
+            'path' => '/admin/logout.php',
             'method' => 'GET',
-            'description' => 'Logout action'
+            'description' => 'Logout action',
+            'requires_auth' => true
         ],
         'auth.forgot_password' => [
             'path' => '/admin/forgot-password.php',
             'method' => 'GET',
-            'description' => 'Forgot password page'
+            'description' => 'Forgot password page',
+            'requires_auth' => false
         ],
         'auth.reset_password' => [
             'path' => '/admin/forgot-password.php?load=reset',
             'method' => 'POST',
             'description' => 'Password reset form',
-            'attack_vectors' => ['auth_bypass']
+            'attack_vectors' => ['auth_bypass'],
+            'csrf_protected' => true
+        ],
+        'auth.recover_password' => [
+            'path' => '/admin/recover-password.php',
+            'method' => 'GET',
+            'description' => 'Recover password page',
+            'requires_auth' => false
+        ],
+        'auth.reset_password_alt' => [
+            'path' => '/admin/reset-password.php',
+            'method' => 'GET',
+            'description' => 'Reset password page',
+            'requires_auth' => false
+        ],
+        'auth.signup' => [
+            'path' => '/admin/signup.php',
+            'method' => 'GET',
+            'description' => 'User registration page',
+            'requires_auth' => false
+        ],
+        'auth.activate_user' => [
+            'path' => '/admin/activate-user.php',
+            'method' => 'GET',
+            'description' => 'User activation',
+            'requires_auth' => false
+        ],
+        
+        // Dashboard
+        'dashboard.index' => [
+            'path' => '/admin/dashboard.php',
+            'method' => 'GET',
+            'description' => 'Admin dashboard',
+            'requires_auth' => true
         ],
         
         // Posts
@@ -193,6 +257,54 @@ function getBlogwareRoutes() {
             'requires_auth' => true
         ],
         
+        // Pages
+        'pages.list' => [
+            'path' => '/admin/pages.php',
+            'method' => 'GET',
+            'description' => 'Pages management list',
+            'requires_auth' => true,
+            'attack_vectors' => ['idor']
+        ],
+        'pages.new' => [
+            'path' => '/admin/pages.php?action=new',
+            'method' => 'GET',
+            'description' => 'New page form',
+            'requires_auth' => true
+        ],
+        'pages.insert' => [
+            'path' => '/admin/pages.php?load=insert',
+            'method' => 'POST',
+            'description' => 'Insert new page',
+            'attack_vectors' => ['stored_xss', 'csrf', 'sqli'],
+            'csrf_protected' => true,
+            'requires_auth' => true
+        ],
+        'pages.edit' => [
+            'path' => '/admin/pages.php?action=edit&Id=(?<id>\d+)',
+            'method' => 'GET',
+            'description' => 'Edit page form',
+            'parameters' => ['id'],
+            'attack_vectors' => ['idor'],
+            'requires_auth' => true
+        ],
+        'pages.update' => [
+            'path' => '/admin/pages.php?load=update',
+            'method' => 'POST',
+            'description' => 'Update existing page',
+            'attack_vectors' => ['stored_xss', 'csrf', 'idor', 'sqli'],
+            'csrf_protected' => true,
+            'requires_auth' => true
+        ],
+        'pages.delete' => [
+            'path' => '/admin/pages.php?load=delete&Id=(?<id>\d+)',
+            'method' => 'GET',
+            'description' => 'Delete page',
+            'parameters' => ['id'],
+            'attack_vectors' => ['idor', 'csrf'],
+            'csrf_protected' => true,
+            'requires_auth' => true
+        ],
+        
         // Comments
         'comments.list' => [
             'path' => '/admin/comments.php',
@@ -212,8 +324,17 @@ function getBlogwareRoutes() {
             'path' => '/admin/comments.php?load=delete&Id=(?<id>\d+)',
             'method' => 'GET',
             'description' => 'Delete comment',
+            'parameters' => ['id'],
             'attack_vectors' => ['idor', 'csrf'],
             'csrf_protected' => true,
+            'requires_auth' => true
+        ],
+        
+        // Reply
+        'reply.list' => [
+            'path' => '/admin/reply.php',
+            'method' => 'GET',
+            'description' => 'Reply management list',
             'requires_auth' => true
         ],
         
@@ -257,8 +378,15 @@ function getBlogwareRoutes() {
             'path' => '/admin/users.php?load=delete&Id=(?<id>\d+)',
             'method' => 'GET',
             'description' => 'Delete user',
+            'parameters' => ['id'],
             'attack_vectors' => ['idor', 'csrf'],
             'csrf_protected' => true,
+            'requires_auth' => true
+        ],
+        'users.request' => [
+            'path' => '/admin/request.php',
+            'method' => 'GET',
+            'description' => 'User requests/registrations',
             'requires_auth' => true
         ],
         
@@ -281,7 +409,16 @@ function getBlogwareRoutes() {
             'path' => '/admin/medialib.php?load=delete&Id=(?<id>\d+)',
             'method' => 'GET',
             'description' => 'Delete media',
+            'parameters' => ['id'],
             'attack_vectors' => ['idor', 'csrf'],
+            'csrf_protected' => true,
+            'requires_auth' => true
+        ],
+        'media.upload_ajax' => [
+            'path' => '/admin/media-upload.php',
+            'method' => 'POST',
+            'description' => 'AJAX media upload (SummerNote)',
+            'attack_vectors' => ['upload_rce', 'path_traversal', 'csrf'],
             'csrf_protected' => true,
             'requires_auth' => true
         ],
@@ -313,6 +450,7 @@ function getBlogwareRoutes() {
             'path' => '/admin/topics.php?load=delete&Id=(?<id>\d+)',
             'method' => 'GET',
             'description' => 'Delete topic',
+            'parameters' => ['id'],
             'attack_vectors' => ['idor', 'csrf'],
             'csrf_protected' => true,
             'requires_auth' => true
@@ -337,6 +475,7 @@ function getBlogwareRoutes() {
             'path' => '/admin/menu.php?load=delete&Id=(?<id>\d+)',
             'method' => 'GET',
             'description' => 'Delete menu item',
+            'parameters' => ['id'],
             'attack_vectors' => ['idor', 'csrf'],
             'csrf_protected' => true,
             'requires_auth' => true
@@ -422,25 +561,166 @@ function getBlogwareRoutes() {
             'requires_auth' => true
         ],
         
-        // Configuration
-        'config.page' => [
-            'path' => '/admin/config.php',
+        // Downloads
+        'downloads.list' => [
+            'path' => '/admin/downloads.php',
             'method' => 'GET',
-            'description' => 'Configuration page',
+            'description' => 'Downloads management',
             'requires_auth' => true
         ],
-        'config.save' => [
-            'path' => '/admin/config.php?load=save',
-            'method' => 'POST',
-            'description' => 'Save configuration',
-            'attack_vectors' => ['csrf', 'stored_xss'],
-            'csrf_protected' => true,
+        
+        // Privacy
+        'privacy.settings' => [
+            'path' => '/admin/privacy.php',
+            'method' => 'GET',
+            'description' => 'Privacy settings',
             'requires_auth' => true
+        ],
+        'privacy.policy' => [
+            'path' => '/admin/privacy-policy.php',
+            'method' => 'GET',
+            'description' => 'Privacy policy management',
+            'requires_auth' => true
+        ],
+        
+        // Languages & Translations
+        'languages.list' => [
+            'path' => '/admin/languages.php',
+            'method' => 'GET',
+            'description' => 'Languages management',
+            'requires_auth' => true
+        ],
+        'translations.list' => [
+            'path' => '/admin/translations.php',
+            'method' => 'GET',
+            'description' => 'Translation editor',
+            'requires_auth' => true
+        ],
+        
+        // Configuration Pages
+        'config.general' => [
+            'path' => '/admin/option-general.php',
+            'method' => 'GET',
+            'description' => 'General settings',
+            'requires_auth' => true
+        ],
+        'config.reading' => [
+            'path' => '/admin/option-reading.php',
+            'method' => 'GET',
+            'description' => 'Reading settings',
+            'requires_auth' => true
+        ],
+        'config.permalink' => [
+            'path' => '/admin/option-permalink.php',
+            'method' => 'GET',
+            'description' => 'Permalink settings',
+            'requires_auth' => true
+        ],
+        'config.mail' => [
+            'path' => '/admin/option-mail.php',
+            'method' => 'GET',
+            'description' => 'Mail/SMTP settings',
+            'requires_auth' => true
+        ],
+        'config.membership' => [
+            'path' => '/admin/option-memberships.php',
+            'method' => 'GET',
+            'description' => 'Membership settings',
+            'requires_auth' => true
+        ],
+        'config.timezone' => [
+            'path' => '/admin/option-timezone.php',
+            'method' => 'GET',
+            'description' => 'Timezone settings',
+            'requires_auth' => true
+        ],
+        'config.sitemap' => [
+            'path' => '/admin/option-sitemap.php',
+            'method' => 'GET',
+            'description' => 'Sitemap settings',
+            'requires_auth' => true
+        ],
+        'config.downloads' => [
+            'path' => '/admin/option-downloads.php',
+            'method' => 'GET',
+            'description' => 'Download settings',
+            'requires_auth' => true
+        ],
+        'config.api' => [
+            'path' => '/admin/option-api.php',
+            'method' => 'GET',
+            'description' => 'API settings',
+            'requires_auth' => true
+        ],
+        'config.language' => [
+            'path' => '/admin/option-language.php',
+            'method' => 'GET',
+            'description' => 'Language settings',
+            'requires_auth' => true
+        ],
+        
+        // Navigation
+        'nav.sidebar' => [
+            'path' => '/admin/sidebar-nav.php',
+            'method' => 'GET',
+            'description' => 'Sidebar navigation',
+            'requires_auth' => true
+        ],
+        'nav.menu' => [
+            'path' => '/admin/navigation.php',
+            'method' => 'GET',
+            'description' => 'Navigation menu',
+            'requires_auth' => true
+        ],
+        
+        // Error Pages
+        'error.403' => [
+            'path' => '/admin/403.php',
+            'method' => 'GET',
+            'description' => '403 Forbidden page',
+            'requires_auth' => false
+        ],
+        'error.404' => [
+            'path' => '/admin/404.php',
+            'method' => 'GET',
+            'description' => '404 Not Found page',
+            'requires_auth' => false
+        ],
+        
+        // Captcha
+        'captcha.login' => [
+            'path' => '/admin/captcha-login.php',
+            'method' => 'GET',
+            'description' => 'Login captcha',
+            'requires_auth' => false
+        ],
+        'captcha.forgot' => [
+            'path' => '/admin/captcha-forgot-pwd.php',
+            'method' => 'GET',
+            'description' => 'Forgot password captcha',
+            'requires_auth' => false
+        ],
+        
+        // Fetch
+        'fetch.tags' => [
+            'path' => '/admin/fetch-tags.php',
+            'method' => 'GET',
+            'description' => 'AJAX tags fetch',
+            'requires_auth' => false
         ]
     ];
     
-    // API routes
+    // API routes (from api/index.php)
     $apiRoutes = [
+        // API Info
+        'api.info' => [
+            'path' => '/api/v1',
+            'method' => 'GET',
+            'description' => 'API information endpoint',
+            'requires_auth' => false
+        ],
+        
+        // Posts API
         'api.posts' => [
             'path' => '/api/v1/posts',
             'method' => 'GET',
@@ -457,6 +737,113 @@ function getBlogwareRoutes() {
             'attack_vectors' => ['idor'],
             'requires_auth' => false
         ],
+        'api.post_comments' => [
+            'path' => '/api/v1/posts/(?<id>\d+)/comments',
+            'method' => 'GET',
+            'description' => 'API - Get post comments',
+            'parameters' => ['id'],
+            'attack_vectors' => ['sqli'],
+            'requires_auth' => false
+        ],
+        'api.post_store' => [
+            'path' => '/api/v1/posts',
+            'method' => 'POST',
+            'description' => 'API - Create post',
+            'attack_vectors' => ['stored_xss', 'sqli'],
+            'requires_auth' => true
+        ],
+        'api.post_update' => [
+            'path' => '/api/v1/posts/(?<id>\d+)',
+            'method' => 'PUT',
+            'description' => 'API - Update post',
+            'parameters' => ['id'],
+            'attack_vectors' => ['stored_xss', 'sqli', 'idor'],
+            'requires_auth' => true
+        ],
+        'api.post_destroy' => [
+            'path' => '/api/v1/posts/(?<id>\d+)',
+            'method' => 'DELETE',
+            'description' => 'API - Delete post',
+            'parameters' => ['id'],
+            'attack_vectors' => ['idor', 'csrf'],
+            'requires_auth' => true
+        ],
+        
+        // Protected Post API
+        'api.post_unlock' => [
+            'path' => '/api/v1/posts/(?<id>\d+)/unlock',
+            'method' => 'POST',
+            'description' => 'API - Unlock password-protected post',
+            'parameters' => ['id', 'password'],
+            'attack_vectors' => ['idor', 'brute_force'],
+            'requires_auth' => false
+        ],
+        'api.post_verify' => [
+            'path' => '/api/v1/posts/(?<id>\d+)/verify',
+            'method' => 'POST',
+            'description' => 'API - Verify password-protected post',
+            'parameters' => ['id', 'password'],
+            'attack_vectors' => ['brute_force'],
+            'requires_auth' => false
+        ],
+        
+        // Media API
+        'api.media_upload' => [
+            'path' => '/api/v1/media/upload',
+            'method' => 'POST',
+            'description' => 'API - Upload media file',
+            'attack_vectors' => ['upload_rce', 'path_traversal', 'csrf'],
+            'requires_auth' => true
+        ],
+        
+        // Categories API
+        'api.categories' => [
+            'path' => '/api/v1/categories',
+            'method' => 'GET',
+            'description' => 'API - Get categories',
+            'requires_auth' => false
+        ],
+        'api.category_single' => [
+            'path' => '/api/v1/categories/(?<id>\d+)',
+            'method' => 'GET',
+            'description' => 'API - Get single category',
+            'parameters' => ['id'],
+            'attack_vectors' => ['idor'],
+            'requires_auth' => false
+        ],
+        'api.category_posts' => [
+            'path' => '/api/v1/categories/(?<id>\d+)/posts',
+            'method' => 'GET',
+            'description' => 'API - Get category posts',
+            'parameters' => ['id'],
+            'attack_vectors' => ['sqli'],
+            'requires_auth' => false
+        ],
+        'api.category_store' => [
+            'path' => '/api/v1/categories',
+            'method' => 'POST',
+            'description' => 'API - Create category',
+            'attack_vectors' => ['stored_xss', 'sqli'],
+            'requires_auth' => true
+        ],
+        'api.category_update' => [
+            'path' => '/api/v1/categories/(?<id>\d+)',
+            'method' => 'PUT',
+            'description' => 'API - Update category',
+            'parameters' => ['id'],
+            'attack_vectors' => ['stored_xss', 'sqli', 'idor'],
+            'requires_auth' => true
+        ],
+        'api.category_destroy' => [
+            'path' => '/api/v1/categories/(?<id>\d+)',
+            'method' => 'DELETE',
+            'description' => 'API - Delete category',
+            'parameters' => ['id'],
+            'attack_vectors' => ['idor', 'csrf'],
+            'requires_auth' => true
+        ],
+        
+        // Comments API
         'api.comments' => [
             'path' => '/api/v1/comments',
             'method' => 'GET',
@@ -465,27 +852,222 @@ function getBlogwareRoutes() {
             'attack_vectors' => ['sqli'],
             'requires_auth' => false
         ],
-        'api.categories' => [
-            'path' => '/api/v1/categories',
+        'api.comment_single' => [
+            'path' => '/api/v1/comments/(?<id>\d+)',
             'method' => 'GET',
-            'description' => 'API - Get categories',
+            'description' => 'API - Get single comment',
+            'parameters' => ['id'],
+            'attack_vectors' => ['idor'],
             'requires_auth' => false
         ],
-        'api.auth_login' => [
-            'path' => '/api/v1/auth/login',
+        'api.comment_store' => [
+            'path' => '/api/v1/comments',
             'method' => 'POST',
-            'description' => 'API - Login',
-            'parameters' => ['username', 'password'],
-            'attack_vectors' => ['sqli', 'auth_bypass'],
+            'description' => 'API - Create comment',
+            'attack_vectors' => ['stored_xss', 'sqli', 'spam'],
             'requires_auth' => false
         ],
-        'api.consent' => [
+        'api.comment_update' => [
+            'path' => '/api/v1/comments/(?<id>\d+)',
+            'method' => 'PUT',
+            'description' => 'API - Update comment',
+            'parameters' => ['id'],
+            'attack_vectors' => ['stored_xss', 'sqli', 'idor'],
+            'requires_auth' => true
+        ],
+        'api.comment_destroy' => [
+            'path' => '/api/v1/comments/(?<id>\d+)',
+            'method' => 'DELETE',
+            'description' => 'API - Delete comment',
+            'parameters' => ['id'],
+            'attack_vectors' => ['idor', 'csrf'],
+            'requires_auth' => true
+        ],
+        
+        // Archives API
+        'api.archives' => [
+            'path' => '/api/v1/archives',
+            'method' => 'GET',
+            'description' => 'API - Get archives',
+            'requires_auth' => false
+        ],
+        'api.archive_year' => [
+            'path' => '/api/v1/archives/(?<year>[0-9]{4})',
+            'method' => 'GET',
+            'description' => 'API - Get archives by year',
+            'parameters' => ['year'],
+            'attack_vectors' => ['sqli'],
+            'requires_auth' => false
+        ],
+        'api.archive_month' => [
+            'path' => '/api/v1/archives/(?<year>[0-9]{4})/(?<month>[0-9]{2})',
+            'method' => 'GET',
+            'description' => 'API - Get archives by month',
+            'parameters' => ['year', 'month'],
+            'attack_vectors' => ['sqli'],
+            'requires_auth' => false
+        ],
+        
+        // Search API
+        'api.search' => [
+            'path' => '/api/v1/search',
+            'method' => 'GET',
+            'description' => 'API - Search all content',
+            'parameters' => ['q', 'type'],
+            'attack_vectors' => ['sqli', 'reflected_xss'],
+            'requires_auth' => false
+        ],
+        'api.search_posts' => [
+            'path' => '/api/v1/search/posts',
+            'method' => 'GET',
+            'description' => 'API - Search posts',
+            'parameters' => ['q'],
+            'attack_vectors' => ['sqli', 'reflected_xss'],
+            'requires_auth' => false
+        ],
+        'api.search_pages' => [
+            'path' => '/api/v1/search/pages',
+            'method' => 'GET',
+            'description' => 'API - Search pages',
+            'parameters' => ['q'],
+            'attack_vectors' => ['sqli', 'reflected_xss'],
+            'requires_auth' => false
+        ],
+        
+        // GDPR API
+        'api.gdpr_consent' => [
             'path' => '/api/v1/gdpr/consent',
             'method' => 'POST',
             'description' => 'API - GDPR consent',
             'parameters' => ['consent_type', 'granted'],
             'attack_vectors' => ['csrf', 'sqli'],
             'requires_auth' => false
+        ],
+        'api.gdpr_status' => [
+            'path' => '/api/v1/gdpr/consent',
+            'method' => 'GET',
+            'description' => 'API - Get GDPR consent status',
+            'requires_auth' => false
+        ],
+        
+        // Languages API
+        'api.languages' => [
+            'path' => '/api/v1/languages',
+            'method' => 'GET',
+            'description' => 'API - Get languages',
+            'requires_auth' => false
+        ],
+        'api.languages_active' => [
+            'path' => '/api/v1/languages/active',
+            'method' => 'GET',
+            'description' => 'API - Get active languages',
+            'requires_auth' => false
+        ],
+        'api.languages_default' => [
+            'path' => '/api/v1/languages/default',
+            'method' => 'GET',
+            'description' => 'API - Get default language',
+            'requires_auth' => false
+        ],
+        'api.language_single' => [
+            'path' => '/api/v1/languages/(?<code>[a-z]{2})',
+            'method' => 'GET',
+            'description' => 'API - Get single language',
+            'parameters' => ['code'],
+            'requires_auth' => false
+        ],
+        'api.language_store' => [
+            'path' => '/api/v1/languages',
+            'method' => 'POST',
+            'description' => 'API - Create language',
+            'attack_vectors' => ['sqli'],
+            'requires_auth' => true
+        ],
+        'api.language_update' => [
+            'path' => '/api/v1/languages/(?<code>[a-z]{2})',
+            'method' => 'PUT',
+            'description' => 'API - Update language',
+            'parameters' => ['code'],
+            'attack_vectors' => ['sqli'],
+            'requires_auth' => true
+        ],
+        'api.language_destroy' => [
+            'path' => '/api/v1/languages/(?<code>[a-z]{2})',
+            'method' => 'DELETE',
+            'description' => 'API - Delete language',
+            'parameters' => ['code'],
+            'attack_vectors' => ['idor'],
+            'requires_auth' => true
+        ],
+        'api.language_set_default' => [
+            'path' => '/api/v1/languages/(?<code>[a-z]{2})/default',
+            'method' => 'PUT',
+            'description' => 'API - Set default language',
+            'parameters' => ['code'],
+            'attack_vectors' => ['idor'],
+            'requires_auth' => true
+        ],
+        
+        // Translations API
+        'api.translations' => [
+            'path' => '/api/v1/translations/(?<code>[a-z]{2})',
+            'method' => 'GET',
+            'description' => 'API - Get translations',
+            'parameters' => ['code'],
+            'requires_auth' => false
+        ],
+        'api.translation_single' => [
+            'path' => '/api/v1/translations/(?<code>[a-z]{2})/(?<key>[a-zA-Z0-9._-]+)',
+            'method' => 'GET',
+            'description' => 'API - Get single translation',
+            'parameters' => ['code', 'key'],
+            'requires_auth' => false
+        ],
+        'api.translation_store' => [
+            'path' => '/api/v1/translations/(?<code>[a-z]{2})',
+            'method' => 'POST',
+            'description' => 'API - Create translation',
+            'parameters' => ['code'],
+            'attack_vectors' => ['stored_xss', 'sqli'],
+            'requires_auth' => true
+        ],
+        'api.translation_update' => [
+            'path' => '/api/v1/translations/(?<id>\d+)',
+            'method' => 'PUT',
+            'description' => 'API - Update translation',
+            'parameters' => ['id'],
+            'attack_vectors' => ['stored_xss', 'sqli', 'idor'],
+            'requires_auth' => true
+        ],
+        'api.translation_destroy' => [
+            'path' => '/api/v1/translations/(?<id>\d+)',
+            'method' => 'DELETE',
+            'description' => 'API - Delete translation',
+            'parameters' => ['id'],
+            'attack_vectors' => ['idor', 'csrf'],
+            'requires_auth' => true
+        ],
+        'api.translation_export' => [
+            'path' => '/api/v1/translations/(?<code>[a-z]{2})/export',
+            'method' => 'GET',
+            'description' => 'API - Export translations',
+            'parameters' => ['code'],
+            'requires_auth' => true
+        ],
+        'api.translation_import' => [
+            'path' => '/api/v1/translations/(?<code>[a-z]{2})/import',
+            'method' => 'POST',
+            'description' => 'API - Import translations',
+            'parameters' => ['code'],
+            'attack_vectors' => ['xxe', 'sqli'],
+            'requires_auth' => true
+        ],
+        'api.translation_cache' => [
+            'path' => '/api/v1/translations/(?<code>[a-z]{2})/cache',
+            'method' => 'POST',
+            'description' => 'API - Regenerate translation cache',
+            'parameters' => ['code'],
+            'requires_auth' => true
         ]
     ];
     
@@ -533,6 +1115,13 @@ function getBlogwareRoutes() {
             'attack_vectors' => ['sqli', 'config_tampering'],
             'expected_after_install' => '404_or_redirect'
         ],
+        'sensitive.finish' => [
+            'path' => '/install/finish.php',
+            'method' => 'GET',
+            'description' => 'Installation finish',
+            'attack_vectors' => ['config_tampering'],
+            'expected_after_install' => '404_or_redirect'
+        ],
         'sensitive.config' => [
             'path' => '/config.php',
             'method' => 'GET',
@@ -544,6 +1133,13 @@ function getBlogwareRoutes() {
             'path' => '/README.md',
             'method' => 'GET',
             'description' => 'README file access',
+            'attack_vectors' => ['info_disclosure'],
+            'expected_response' => '403_or_empty'
+        ],
+        'sensitive.env' => [
+            'path' => '/.env',
+            'method' => 'GET',
+            'description' => 'Environment file access',
             'attack_vectors' => ['info_disclosure'],
             'expected_response' => '403_or_empty'
         ]
@@ -568,10 +1164,10 @@ function getExportMetadata() {
     return [
         'meta' => [
             'name' => 'Blogware/Scriptlog CMS Routes',
-            'version' => '1.0',
-            'description' => 'Dynamically extracted route definitions for security testing',
+            'version' => '2.0',
+            'description' => 'Comprehensive route definitions for security testing',
             'generated' => date('Y-m-d H:i:s'),
-            'generator' => 'Socrates Blade Route Exporter v1.0',
+            'generator' => 'Socrates Blade Route Exporter v2.0',
             'php_version' => PHP_VERSION,
             'url' => function_exists('app_url') ? app_url() : 'unknown'
         ]

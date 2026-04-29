@@ -390,6 +390,42 @@ Don't overwhelm target servers with too many requests. Use `--timeout` and `--th
 
 ```
 socrates-blade/
+├── socrates-blade.py       # Main security scanner (1062 lines)
+├── run-scan.sh            # Automation wrapper (485 lines)
+├── config.py              # Configuration and settings (543 lines)
+├── routes.json            # Application routes (1419 lines, 142 routes)
+├── export_routes.php      # PHP route extractor v2.0 (750+ lines)
+├── scanrequirements.txt   # Python dependencies
+├── payloads/              # Attack test payloads
+│   ├── xss.txt           # 116+ XSS attack strings
+│   ├── sqli.txt          # 150+ SQL injection strings
+│   ├── traversal.txt     # 139+ path traversal strings
+│   └── ssrf.txt         # 191+ SSRF test strings
+├── wordlists/             # Brute force wordlists
+├── tests/                 # Test suite
+│   ├── bash/             # Shell script tests
+│   └── python/           # Python tests
+├── reports/               # Generated scan reports
+├── lib/                   # PHP lib for route extraction
+├── venv/                  # Python virtual environment
+├── LICENSE.md            # MIT License
+└── README.md             # This file
+```
+
+### Route Coverage (v2.0)
+
+The `export_routes.php` now includes comprehensive route definitions:
+
+| Category | Routes | Description |
+|----------|--------|-------------|
+| Frontend | 12 | Home, single, category, tag, archive, blog, search, page, privacy, download |
+| Admin | 75+ | All admin pages (auth, posts, pages, comments, users, media, topics, menu, plugins, themes, import, export, downloads, privacy, languages, translations, settings) |
+| API | 55+ | Full REST API (posts, categories, comments, archives, search, GDPR, languages, translations, media, protected posts) |
+| Public | 3 | Comment submit, contact, subscribe |
+| Sensitive | 6 | Install wizard, config files |
+
+**Total: 142 routes** (expanded from ~62 in v1.0)
+socrates-blade/
 ├── socrates-blade.py       # Main security scanner
 ├── run-scan.sh            # Automation wrapper (start here!)
 ├── config.py              # Configuration and settings
