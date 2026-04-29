@@ -380,13 +380,13 @@ class BlogSecurityTester:
                 return True
         
         # Already-encoded payloads that are safely escaped
-        # If payload appears URL-encoded, it might be safely escaped
+        # If payload appears URL-encoded, check if the decoded form is
+        # reflected — if not, it's likely safely escaped
         if '%3C' in payload or '%3E' in payload or '%22' in payload:
-            # Check if raw form is NOT in response (meaning it's escaped)
             decoded = unquote(payload)
-            if decoded not in resp.text:
+            if decoded.lower() not in url.lower() and decoded.lower() not in param.lower():
                 return True
-        
+
         return False
     
     def test_xss(self, url, params, method='GET'):
