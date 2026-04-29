@@ -416,12 +416,6 @@ class BlogSecurityTester:
                         if self.is_false_positive(url, param, payload):
                             continue
                         
-                        # Check if it's in a dangerous context (not escaped)
-                        # Look for unescaped < and > characters
-                        if '<' in payload and f'&lt;{payload.replace("<", "")}' in resp.text:
-                            # Safe - was HTML-escaped
-                            continue
-                        
                         self.add_finding(
                             'Reflected XSS',
                             url,

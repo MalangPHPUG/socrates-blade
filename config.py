@@ -525,6 +525,7 @@ class OWASP:
 CWE_MAPPINGS = {
     "xss": ["CWE-79", "CWE-80", "CWE-81", "CWE-82", "CWE-83", "CWE-84", "CWE-85"],
     "sqli": ["CWE-89", "CWE-90", "CWE-564", "CWE-656"],
+    "sql": ["CWE-89", "CWE-90", "CWE-564", "CWE-656"],
     "idor": ["CWE-639", "CWE-22", "CWE-862"],
     "csrf": ["CWE-352"],
     "ssrf": ["CWE-918"],
