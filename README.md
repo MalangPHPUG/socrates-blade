@@ -1,6 +1,6 @@
 # Socrates Blade
 
-**Security Testing Framework for Scriptlog PHP Blogware Applications**
+**Security Testing Framework for Scriptlog PHP Blogware**
 
 ![Socrates Blade Mascot](assets/socrates-blade-min.png)
 ![Version](https://img.shields.io/badge/version-3.2.0-blue)
@@ -9,42 +9,38 @@
 
 ---
 
-## What is Socrates Blade?
+## What Is Socrates Blade?
 
-Socrates Blade is a security testing tool that helps you find vulnerabilities in Scriptlog PHP Blogware applications. It scans your web application for common security issues and provides detailed reports about what it finds.
+Socrates Blade is a security scanner built for [Scriptlog](https://github.com/cakmoel/Scriptlog) - a PHP blog platform. It checks your web application for common security flaws and gives you a clear report of what it finds.
 
-Think of it like a health check for your website's security - it looks for weaknesses that hackers might exploit.
+Think of it as a health check for your website's security. It looks for weaknesses that attackers might try to exploit, so you can fix them before they become a problem.
 
-### What Can It Find?
+### What It Detects
 
-- **SQL Injection** - Dangerous SQL commands that could steal your database
-- **Cross-Site Scripting (XSS)** - Malicious scripts that could attack your users
-- **Path Traversal** - Files that shouldn't be accessible
-- **Server-Side Request Forgery (SSRF)** - Attacks that trick your server into visiting malicious URLs
-- **And many more...**
+| Issue | What It Means |
+|-------|---------------|
+| **SQL Injection** | Attackers could tamper with your database through input fields |
+| **Cross-Site Scripting (XSS)** | Malicious scripts could be injected into your pages |
+| **Path Traversal** | Unauthorized users might access files outside the web root |
+| **Server-Side Request Forgery (SSRF)** | Your server could be tricked into making dangerous requests |
+
+And many more - the scanner tests against hundreds of attack patterns.
 
 ---
 
 ## System Requirements
 
-Before you begin, make sure your computer has:
+| Requirement | Minimum Version | Why |
+|-------------|----------------|-----|
+| **Python** | 3.8+ | Runs the scanner engine |
+| **PHP** | 7.4+ | Extracts application routes from your Scriptlog installation |
+| **curl** | Any recent version | Sends test requests to your site |
+| **OS** | Linux, macOS, Windows (WSL) | Best results on Unix-like systems |
 
-| Requirement | Minimum Version | Why You Need It |
-|-------------|-----------------|------------------|
-| **Python** | 3.8 or higher | Runs the security scanner |
-| **PHP** | 7.4 or higher | Extracts routes from your application |
-| **curl** | Any recent version | Makes HTTP requests to test your site |
-| **Operating System** | Linux, macOS, or Windows (with WSL) | The tool works best on Unix-like systems |
-
-### Checking Your Python Version
+To check your versions:
 
 ```bash
 python3 --version
-```
-
-### Checking Your PHP Version
-
-```bash
 php --version
 ```
 
@@ -52,132 +48,99 @@ php --version
 
 ## Installation
 
-### Step 1: Download from GitHub
-
-Open your terminal and run:
+### 1. Download Socrates Blade
 
 ```bash
-# Clone the repository
 git clone https://github.com/scriptlog/socrates-blade.git
-
-# Enter the directory
 cd socrates-blade
 ```
 
-### Step 2: Set Up Python Virtual Environment
+### 2. Set Up a Virtual Environment
+
+A virtual environment keeps Python dependencies organized and avoids conflicts with other projects.
 
 ```bash
-# Create a virtual environment (keeps your Python packages organized)
 python3 -m venv venv
-
-# Activate the virtual environment
-# On Linux/macOS:
-source venv/bin/activate
-
-# On Windows (Command Prompt):
-venv\Scripts\activate.bat
-
-# On Windows (PowerShell):
-venv\Scripts\Activate.ps1
+source venv/bin/activate        # Linux / macOS
+venv\Scripts\activate.bat       # Windows (CMD)
+venv\Scripts\Activate.ps1       # Windows (PowerShell)
 ```
 
-### Step 3: Install Dependencies
+### 3. Install Dependencies
 
 ```bash
-# Install required Python packages
 pip install -r scanrequirements.txt
 ```
 
-### Step 4: Verify Installation
+### 4. Verify It Works
 
 ```bash
-# Check that everything is working
 python3 socrates-blade.py --help
 ```
 
-You should see a help message with all available options.
+You should see a help message listing all available options.
 
 ---
 
-## Quick Start Guide
+## Quick Start
 
-### Route Synchronization
+### Place Socrates Blade Inside Your Scriptlog Installation
 
-Socrates Blade uses `export_routes.php` to dynamically extract route definitions from your Scriptlog/Blogware installation. This ensures the security scanner has up-to-date information about all available endpoints.
-
-**Option 1: Place Socrates Blade Inside Scriptlog Installation**
-
-For the best experience, place Socrates Blade inside your Scriptlog installation:
+For the smoothest experience, copy the tool into your Scriptlog directory:
 
 ```bash
-# Copy socrates-blade to your Scriptlog installation
 cp -r socrates-blade /var/www/phpsite/public_html/
-
-# Navigate to the tool directory
 cd /var/www/phpsite/public_html/socrates-blade
 ```
 
-When placed inside Scriptlog, `export_routes.php` will automatically detect the `config.php` in the parent directory and extract the correct application URL.
+When placed inside Scriptlog, the route extractor (`export_routes.php`) automatically finds your `config.php` and reads the correct application URL.
 
-**Option 2: Standalone Installation**
+### Standalone Installation
 
-Place Socrates Blade anywhere on your system:
+If you prefer to keep the scanner separate:
 
 ```bash
-# Copy lib folder from Scriptlog to socrates-blade directory
-# (lib folder should be at the same level as export_routes.php)
-cp -r /var/www/phpsite/public_html/lib /var/www/html/socrates-blade/
-
-# Copy config.php to socrates-blade directory
-cp /var/www/phpsite/public_html/config.php /var/www/html/socrates-blade/
+cp -r /your/scriptlog/lib /your/scanner/directory/socrates-blade/
+cp /your/scriptlog/config.php /your/scanner/directory/socrates-blade/
 ```
 
-### Generate Routes
+### Generate Application Routes
 
-After placing the tool, generate the routes.json file:
+Routes tell the scanner what pages and endpoints to test.
 
 ```bash
-# Navigate to socrates-blade directory
-cd /var/www/phpsite/public_html/socrates-blade  # if inside Scriptlog
-# OR
-cd /var/www/html/socrates-blade  # if standalone
-
-# Export routes to JSON
 php export_routes.php > routes.json
 ```
 
-This will create an updated `routes.json` file with:
+This produces a `routes.json` file containing:
 - Current timestamp
-- Application URL from config.php
-- All available routes from your Scriptlog installation
+- Application URL from `config.php`
+- All available routes in your Scriptlog installation (frontend, admin, API, and more)
 
-### Your First Security Scan
+### Run Your First Scan
 
-Let's run a simple scan on your local development server:
+Make sure your web server is running, then:
 
 ```bash
-# Make sure your local server is running first!
-# Then run the scan:
-
 ./run-scan.sh http://localhost
 ```
 
-The tool will:
-1. Validate that your URL is reachable
+The scanner will:
+1. Confirm your URL is reachable
 2. Check system requirements
-3. Set up Python environment
-4. Scan for vulnerabilities
-5. Generate a report
+3. Set up the Python environment
+4. Run security tests against all discovered routes
+5. Generate a results report
 
-### Running a Dry Run (Preview Mode)
+### Try a Dry Run First
 
-If you want to see what the scan will do without actually running it:
+A dry run shows what the scan would do without actually sending any requests:
 
 ```bash
 ./run-scan.sh http://localhost --dry-run
 ```
 
-This shows you all the commands that would be executed - great for learning what happens behind the scenes!
+This is useful for learning how the scanner works before running a real test.
 
 ---
 
@@ -191,6 +154,8 @@ This shows you all the commands that would be executed - great for learning what
 
 ### Scan with Authentication
 
+Some areas of your site require login. Supply credentials to test those too:
+
 ```bash
 ./run-scan.sh http://localhost \
     -u admin \
@@ -198,7 +163,7 @@ This shows you all the commands that would be executed - great for learning what
     -o findings.json
 ```
 
-### Generate HTML Report
+### Generate an HTML Report
 
 ```bash
 ./run-scan.sh http://localhost \
@@ -209,24 +174,21 @@ This shows you all the commands that would be executed - great for learning what
 
 ### Aggressive Mode (Thorough Testing)
 
+Aggressive mode runs deeper tests but takes longer:
+
 ```bash
-./run-scan.sh http://localhost \
-    --aggressive \
-    --timeout 30
+./run-scan.sh http://localhost --aggressive --timeout 30
 ```
 
-Aggressive mode takes longer but tests more thoroughly.
-
-### Scan Through a Proxy (e.g., Burp Suite)
+### Route Scans Through a Proxy (e.g., Burp Suite)
 
 ```bash
-./run-scan.sh http://localhost \
-    --proxy http://127.0.0.1:8080
+./run-scan.sh http://localhost --proxy http://127.0.0.1:8080
 ```
 
 ### Skip URL Validation
 
-If your target isn't accessible but you still want to run the scan:
+Use this if your target isn't directly reachable but you still want to scan:
 
 ```bash
 ./run-scan.sh http://localhost --no-validate
@@ -234,71 +196,73 @@ If your target isn't accessible but you still want to run the scan:
 
 ---
 
-## Understanding the Output
+## Understanding Scan Results
 
 ### Severity Levels
 
-| Level | Meaning | Action Required |
-|-------|---------|-----------------|
-| **CRITICAL** | Immediate threat - could lead to data breach or complete system compromise | Fix within 24 hours |
-| **HIGH** | Serious vulnerability that could be exploited | Fix within 7 days |
-| **MEDIUM** | Moderate risk - should be addressed | Fix within 30 days |
-| **LOW** | Minor issue - improve when possible | Fix within 90 days |
+| Level | What It Means | When to Fix |
+|-------|---------------|-------------|
+| **CRITICAL** | Immediate danger - data breach or full system compromise possible | Within 24 hours |
+| **HIGH** | Serious vulnerability that can be exploited | Within 7 days |
+| **MEDIUM** | Moderate risk - should be addressed | Within 30 days |
+| **LOW** | Minor issue - fix when convenient | Within 90 days |
 
-### Report Files
+### Report Formats
 
-After a scan, you'll have:
-
-- **JSON Report** (`-o report.json`) - Machine-readable format for automation
-- **HTML Report** (`--html-report report.html`) - Easy to read in your browser
+| Format | Command | Best For |
+|--------|---------|----------|
+| **JSON** | `-o report.json` | Automation, CI/CD pipelines |
+| **HTML** | `--html-report report.html` | Reading in a browser |
 
 ---
 
-## Command-Line Options Reference
+## Command-Line Options
 
 ### Authentication
-```
--u, --username <name>    Your username
--p, --password <pass>   Your password
-```
 
-### Scanning Options
-```
---aggressive            Run more thorough tests (slower)
---brute-force           Test password guessing
---threads <n>           Number of parallel tests (default: 5)
---timeout <seconds>    How long to wait for responses (default: 5)
---proxy <url>           Use a proxy server
---wordlist <file>       Custom password list for brute force
-```
+| Flag | Description |
+|------|-------------|
+| `-u, --username <name>` | Your login username |
+| `-p, --password <pass>` | Your login password |
 
-### Reporting
-```
--o, --output <file>      Save JSON report
---html-report <file>    Save HTML report
---report-dir <dir>      Where to save reports
-```
+### Scan Behavior
 
-### Other Options
-```
---no-sync               Skip route synchronization
---no-validate          Skip URL validation
---dry-run              Show what would run without executing
--v, --verbose           Show detailed progress
--h, --help              Show this help message
-```
+| Flag | Description |
+|------|-------------|
+| `--aggressive` | Run more thorough tests (slower) |
+| `--brute-force` | Test password guessing |
+| `--threads <n>` | Number of parallel tests (default: 5) |
+| `--timeout <seconds>` | Max wait time for responses (default: 5s) |
+| `--proxy <url>` | Route traffic through a proxy |
+| `--wordlist <file>` | Custom password list for brute force |
+
+### Reports
+
+| Flag | Description |
+|------|-------------|
+| `-o, --output <file>` | Save JSON report to file |
+| `--html-report <file>` | Save HTML report to file |
+| `--report-dir <dir>` | Directory for report storage |
+
+### Other
+
+| Flag | Description |
+|------|-------------|
+| `--no-sync` | Skip route synchronization |
+| `--no-validate` | Skip URL reachability check |
+| `--dry-run` | Preview actions without executing |
+| `-v, --verbose` | Show detailed progress |
+| `-h, --help` | Display help message |
 
 ---
 
-## Testing the Scanner
-
-### Run Unit Tests
+## Running Tests
 
 ```bash
-# Run URL validator tests
+# URL validator tests
 ./tests/bash/test_url_validator.sh
 
-# Run BATS test suite
+# BATS test suite
 bats tests/bash/run-scan.sh.test.bats
 ```
 
@@ -306,7 +270,7 @@ bats tests/bash/run-scan.sh.test.bats
 
 ## CI/CD Integration
 
-### GitHub Actions
+Add security scanning to your GitHub Actions pipeline:
 
 ```yaml
 name: Security Scan
@@ -336,20 +300,22 @@ jobs:
 
 ## Troubleshooting
 
-### "Python not found" Error
+### "Python not found"
 
-Make sure Python 3 is installed:
+Install Python 3, then check:
+
 ```bash
 python3 --version
 ```
 
-### "curl not found" Error
+### "curl not found"
 
-Install curl or use an alternative method.
+Install curl using your system's package manager (e.g., `apt install curl`, `brew install curl`).
 
-### "Permission denied" Error
+### "Permission denied"
 
 Make the script executable:
+
 ```bash
 chmod +x run-scan.sh
 ```
@@ -357,32 +323,24 @@ chmod +x run-scan.sh
 ### Scan Fails to Connect
 
 - Make sure your web server is running
-- Try using `--no-validate` if the URL isn't reachable
+- Try `--no-validate` if the URL isn't reachable
 - Check firewall settings
 
 ---
 
 ## Important Notes
 
-### Only Test Systems You Own or Have Permission To Test
+### Only Test Systems You Own - or Have Written Permission to Test
 
-Using security tools on websites without permission is illegal. Make sure you:
+Running security tools against websites without authorization is illegal. Always:
 
-- Have written permission from the system owner
-- Are testing your own development environment
-- Are following responsible disclosure practices
+- Get written permission from the system owner before testing
+- Use the tool on your own development environment
+- Follow responsible disclosure practices if you find real vulnerabilities
 
 ### Respect Rate Limits
 
-Don't overwhelm target servers with too many requests. Use `--timeout` and `--threads` options responsibly.
-
----
-
-## Getting Help
-
-- Check the [Issues](https://github.com/scriptlog/socrates-blade/issues) page
-- Review the code in `socrates-blade.py` and `config.py`
-- Examine the payloads in the `payloads/` directory
+Don't overwhelm the target server. Adjust `--timeout` and `--threads` to keep your testing reasonable.
 
 ---
 
@@ -390,68 +348,62 @@ Don't overwhelm target servers with too many requests. Use `--timeout` and `--th
 
 ```
 socrates-blade/
-├── socrates-blade.py       # Main security scanner (1062 lines)
-├── run-scan.sh            # Automation wrapper (485 lines)
-├── config.py              # Configuration and settings (543 lines)
-├── routes.json            # Application routes (1419 lines, 142 routes)
-├── export_routes.php      # PHP route extractor v2.0 (750+ lines)
-├── scanrequirements.txt   # Python dependencies
-├── payloads/              # Attack test payloads
-│   ├── xss.txt           # 116+ XSS attack strings
-│   ├── sqli.txt          # 150+ SQL injection strings
-│   ├── traversal.txt     # 139+ path traversal strings
-│   └── ssrf.txt         # 191+ SSRF test strings
-├── wordlists/             # Brute force wordlists
-├── tests/                 # Test suite
-│   ├── bash/             # Shell script tests
-│   └── python/           # Python tests
-├── reports/               # Generated scan reports
-├── lib/                   # PHP lib for route extraction
-├── venv/                  # Python virtual environment
-├── LICENSE.md            # MIT License
-└── README.md             # This file
+├── socrates-blade.py       # Main scanner engine
+├── run-scan.sh             # Automation wrapper (start here)
+├── config.py               # Scanner configuration
+├── routes.json             # Application routes extracted from Scriptlog
+├── export_routes.php       # Route extractor for Scriptlog installations
+├── scanrequirements.txt    # Python package dependencies
+├── url-validator-lib.sh    # URL validation library sourced by run-scan.sh
+├── payloads/               # Attack test payloads
+│   ├── xss.txt            # 116 XSS test strings
+│   ├── sqli.txt           # 150 SQL injection test strings
+│   ├── traversal.txt      # 139 path traversal test strings
+│   └── ssrf.txt           # 191 SSRF test strings
+├── wordlists/              # Brute force wordlists
+│   ├── passwords.txt      # 498 common passwords
+│   └── usernames.txt      # 1916 common usernames
+├── tests/
+│   ├── bash/              # Shell script tests
+│   └── python/unit/       # Python unit tests
+├── reports/                # Generated scan reports
+├── lib/                    # PHP library for route extraction
+├── venv/                   # Python virtual environment
+├── CODE_OF_CONDUCT.md     # Community guidelines
+├── CONTRIBUTING.md        # Contribution guide
+├── LICENSE.md             # MIT License
+├── SECURITY.md            # Security policy
+└── README.md              # This file
 ```
 
-### Route Coverage (v2.0)
+### Route Coverage
 
-The `export_routes.php` now includes comprehensive route definitions:
+The route extractor (`export_routes.php`) covers all Scriptlog endpoints:
 
-| Category | Routes | Description |
-|----------|--------|-------------|
-| Frontend | 12 | Home, single, category, tag, archive, blog, search, page, privacy, download |
-| Admin | 75+ | All admin pages (auth, posts, pages, comments, users, media, topics, menu, plugins, themes, import, export, downloads, privacy, languages, translations, settings) |
-| API | 55+ | Full REST API (posts, categories, comments, archives, search, GDPR, languages, translations, media, protected posts) |
-| Public | 3 | Comment submit, contact, subscribe |
-| Sensitive | 6 | Install wizard, config files |
+| Category | Routes | What It Tests |
+|----------|--------|---------------|
+| Frontend | 12 | Home, posts, categories, tags, archives, search, pages, privacy, downloads |
+| Admin | 75+ | All admin pages (auth, content, users, media, settings, import/export, etc.) |
+| API | 45 | Full REST API (posts, categories, comments, archives, search, GDPR, media) |
+| Public | 3 | Comment submission, contact forms, subscriptions |
+| Sensitive | 6 | Install wizard, configuration files |
 
-**Total: 142 routes** (expanded from ~62 in v1.0)
-socrates-blade/
-├── socrates-blade.py       # Main security scanner
-├── run-scan.sh            # Automation wrapper (start here!)
-├── config.py              # Configuration and settings
-├── routes.json            # Application routes
-├── export_routes.php      # PHP route extractor
-├── scanrequirements.txt   # Python dependencies
-├── payloads/              # Attack test payloads
-│   ├── xss.txt           # XSS attack strings
-│   ├── sqli.txt          # SQL injection strings
-│   ├── traversal.txt     # Path traversal strings
-│   └── ssrf.txt          # SSRF test strings
-├── tests/                 # Test suite
-│   ├── bash/             # Shell script tests
-│   └── python/           # Python tests
-├── LICENSE.md            # MIT License
-└── README.md             # This file
-```
+**Total: 142 routes** (up from ~62 in v1.0)
+
+---
+
+## Getting Help
+
+- [Issue Tracker](https://github.com/scriptlog/socrates-blade/issues) - Report bugs or request features
+- Browse the source: `socrates-blade.py` and `config.py`
+- Review attack payloads in the `payloads/` directory to understand what each test does
 
 ---
 
 ## License
 
-MIT License - See LICENSE.md file for details.
-
----
+[MIT License](LICENSE.md)
 
 **Version**: 3.2.0  
 **Last Updated**: April 2026  
-**Maintained by**: Volunteer
+**Maintained by**: M.Noermoehammad
