@@ -191,6 +191,11 @@ class TestCWEAndOWASP(unittest.TestCase):
         cwe = self.tester.get_cwe_for_type("sqli test")
         self.assertEqual(cwe, "CWE-89")
 
+    def test_get_cwe_for_type_sql(self):
+        """Test CWE mapping for 'sql' key (added for SQL Injection)"""
+        cwe = self.tester.get_cwe_for_type("SQL Injection")
+        self.assertEqual(cwe, "CWE-89")
+
     def test_get_cwe_for_type_unknown(self):
         """Test CWE mapping for unknown type"""
         cwe = self.tester.get_cwe_for_type("Unknown Vulnerability")
@@ -497,8 +502,10 @@ class TestSeverityAndOWASP(unittest.TestCase):
         """Test CWE mappings"""
         self.assertIn("xss", CWE_MAPPINGS)
         self.assertIn("sqli", CWE_MAPPINGS)
+        self.assertIn("sql", CWE_MAPPINGS)
         self.assertEqual(CWE_MAPPINGS["xss"][0], "CWE-79")
         self.assertEqual(CWE_MAPPINGS["sqli"][0], "CWE-89")
+        self.assertEqual(CWE_MAPPINGS["sql"][0], "CWE-89")
 
 
 class TestFalsePositiveFiltering(unittest.TestCase):
@@ -551,6 +558,38 @@ class TestFalsePositiveFiltering(unittest.TestCase):
         url = 'http://localhost/post?id=123'
         payload = 'abc123def456'
         result = self.tester.is_false_positive(url, 'id', payload)
+        self.assertFalse(result)
+
+    def test_url_encoded_xss_in_url_filtered(self):
+        """Test that URL-encoded XSS in URL is filtered"""
+        url = 'http://localhost/search?q=%3Cscript%3Ealert(1)%3C/script%3E'
+        param = 'q'
+        payload = '%3Cscript%3Ealert(1)%3C/script%3E'
+        result = self.tester.is_false_positive(url, param, payload)
+        self.assertTrue(result)
+
+    def test_url_encoded_payload_in_param_filtered(self):
+        """Test that URL-encoded payload matching param name is filtered"""
+        url = 'http://localhost/test?p=%3Csvg/onload=alert(1)%3E'
+        param = 'p'
+        payload = '%3Csvg/onload=alert(1)%3E'
+        result = self.tester.is_false_positive(url, param, payload)
+        self.assertTrue(result)
+
+    def test_url_encoded_different_value_filtered(self):
+        """Test that URL-encoded value NOT matching url/param IS filtered (not reflected)"""
+        url = 'http://localhost/search?q=hello'
+        param = 'q'
+        payload = '%3Cscript%3E'
+        result = self.tester.is_false_positive(url, param, payload)
+        self.assertTrue(result)
+
+    def test_url_encoded_no_percent_encoding_not_filtered(self):
+        """Test that non-URL-encoded payloads are NOT filtered"""
+        url = 'http://localhost/search?q=test'
+        param = 'q'
+        payload = '<script>alert(1)</script>'
+        result = self.tester.is_false_positive(url, param, payload)
         self.assertFalse(result)
 
 
